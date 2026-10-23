@@ -90,6 +90,7 @@ Geekbench 7.1.0 for macOS AVX2, macOS 15.8.1 (24H32):
 | CPU single-core | **2219** | https://browser.geekbench.com/v7/cpu/701753 |
 | CPU multi-core | **13134** | https://browser.geekbench.com/v7/cpu/701753 |
 | GPU Metal | **202470** | https://browser.geekbench.com/v7/gpu/319027 |
+| GPU OpenCL | **110274** | https://browser.geekbench.com/v7/gpu/319186 |
 
 Per-workload scores are in [`benchmarks/geekbench7.md`](benchmarks/geekbench7.md).
 

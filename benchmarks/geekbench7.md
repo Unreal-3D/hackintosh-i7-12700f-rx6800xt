@@ -53,6 +53,12 @@ Result: https://browser.geekbench.com/v7/cpu/701753 (uploaded 2026-10-23)
 
 ## GPU
 
+Two API backends were measured on the same machine. Their scores are not directly
+comparable — Metal and OpenCL use different implementations of each workload — so they
+are listed separately.
+
+### Metal
+
 Result: https://browser.geekbench.com/v7/gpu/319027 (uploaded 2026-10-23)
 
 | Metric | Score |
@@ -72,3 +78,28 @@ Result: https://browser.geekbench.com/v7/gpu/319027 (uploaded 2026-10-23)
 | Path Tracer | 132835 | 237.9 Mpixels/sec |
 | Particle Physics | 143981 | 25813.1 FPS |
 | Fluid Simulation | 193624 | 2853.1 FPS |
+
+### OpenCL
+
+Result: https://browser.geekbench.com/v7/gpu/319186 (uploaded 2026-10-23)
+
+OpenCL device: AMD Radeon RX 6800 XT Compute Engine — 72 compute units, 2575 MHz,
+16 GB, Apple OpenCL platform.
+
+| Metric | Score |
+|---|---|
+| OpenCL | **110274** |
+
+| Workload | Score | Throughput |
+|---|---|---|
+| Background Blur | 88029 | 227.4 images/sec |
+| Face Tracking | 106788 | 132.4 images/sec |
+| Super Resolution | 170713 | 314.9 Kimages/sec |
+| Horizon Detection | 88093 | 3.40 Gpixels/sec |
+| Photo Filter | 94093 | 1.54 Kpixels/sec |
+| Video Filter | 99510 | 27.0 Gpixels/sec |
+| RAW | 132954 | 5.37 Gpixels/sec |
+| Feature Matching | 134567 | 254.0 Mpixels/sec |
+| Path Tracer | 115717 | 207.3 Mpixels/sec |
+| Particle Physics | 96955 | 17382.1 FPS |
+| Fluid Simulation | 110362 | 1626.2 FPS |
