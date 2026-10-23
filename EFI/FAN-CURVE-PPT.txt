@@ -1,0 +1,82 @@
+RX 6800 XT (Navi 21) VBIOS fan / thermal table
+==============================================================================
+Card          : Yeston / WEIKENG NAVI21EXT Gaming XT D412 (RX 6800 XT 16GB)
+PCI           : 1002:73BF  subsystem 1ED3:0E3A  (bus 03:00.0)
+VBIOS strings : 113-xxx-xxx / NAVI21EXT Gaming XT D412
+ATOMBIOS      : ATOMBIOSBK-AMD VER020.001.000.071.000000
+ROM build     : WEIKENG_NAVI21EXT_D412_BSD68XT_GDDR6_16GB_210524
+PP table      : 2470 bytes, PowerPlayInfo v15.0
+  original sha256: b3465071b2674355984c1faea16016a74d7b4c1768c7085ab53e21ff7c96a257
+  modified sha256: 4c0d07522f359a6bd1f6a6e7ba74438b2d927e1ece1f0e3bb09abeafa3671db6
+
+Where these numbers come from:
+  Windows ACPI VFCT table (holds the card ROM)
+    -> upp (github.com/sibradzic/upp) extract -> navi21.pp_table
+    -> patch 3 bytes -> navi21-zerorpm-off.pp_table
+    -> base64 -> OpenCore DeviceProperties: PP_PhmSoftPowerPlayTable
+  device path: PciRoot(0x0)/Pci(0x1,0x0)/Pci(0x0,0x0)/Pci(0x0,0x0)/Pci(0x0,0x0)
+
+Why: macOS exposes no GPU fan control API. The SMU firmware follows the
+VBIOS fan table; factory zero-RPM keeps the fans stopped below 55 C, so
+macOS idles near 50 C. With zero-RPM disabled the fans run at FanPwmMin
+(~25%) continuously and idle drops to roughly 40 C.
+
+Fan table (smc_pptable)     offset   original -> modified   note
+------------------------------------------------------------------------------
+FanZeroRpmEnable          1832      1 -> 0    [CHANGED]  zero-RPM switch: 1=on (fans stop), 0=off
+FanStopTemp               1790     55 -> 35   [CHANGED]  fans stay off below this temp (C)
+FanStartTemp              1792     70 -> 40   [CHANGED]  fans start above this temp (C)
+FanPwmMin                 1814     25 -> 25              minimum fan PWM duty (%)
+FanAcousticLimitRpm       1816   1900 -> 1900            acoustic limit (RPM)
+FanThrottlingRpm          1818   2800 -> 2800            throttling RPM
+FanMaximumRpm             1820   3000 -> 3000            maximum RPM
+FanTargetTemperature      1824     85 -> 85              closed loop target temperature (C)
+FanTempInputSelect        1830      1 -> 1               SMU temperature source (0=edge, 1=hotspot/junction)
+FanTachEdgePerRev         1833      2 -> 2               tach edges per revolution
+
+FanGain[0..9] = 400, 400, 400, 400, 400, 400, 400, 400, 400, 400
+
+Temperature limits (C)      offset   value
+------------------------------------------------------------------------------
+TempLimit[0] EDGE (Tctl)           854     100
+TempLimit[1] JUNCTION (Tjmax)      856     110
+TempLimit[2] MEMORY                858     100
+TempLimit[3] HOTSPOT               860     115
+TempLimit[4] VR SOC                862     115
+TempLimit[5] VR GFX                864     115
+TempLimit[6] VR MVDD               866     115
+TempLimit[7] VR VDDCI              868       0  (not used / 0)
+software_shutdown_temp                       28     118
+
+Overdrive feature caps (1 = feature supported / adjustable)
+------------------------------------------------------------------------------
+  cap[ 0] GFXCLK_LIMITS                  = 1
+  cap[ 1] GFXCLK_CURVE                   = 1
+  cap[ 2] UCLK_LIMITS                    = 1
+  cap[ 3] POWER_LIMIT                    = 1
+  cap[ 4] FAN_ACOUSTIC_LIMIT             = 1
+  cap[ 5] FAN_SPEED_MIN                  = 1
+  cap[ 6] TEMPERATURE_FAN                = 1
+  cap[ 7] TEMPERATURE_SYSTEM             = 1
+  cap[ 8] MEMORY_TIMING_TUNE             = 1
+  cap[ 9] FAN_ZERO_RPM_CONTROL           = 1
+  cap[10] AUTO_UV_ENGINE                 = 1
+  cap[11] AUTO_OC_ENGINE                 = 1
+  cap[12] AUTO_OC_MEMORY                 = 1
+  cap[13] FAN_CURVE                      = 1
+  cap[15] POWER_MODE                     = 1
+
+Resulting behaviour
+------------------------------------------------------------------------------
+  before: fans OFF below 55 C, start 70 C, target 85 C  -> macOS idle ~50 C
+  after : zero-RPM off, fans always on at >=25% duty, start 40 / stop 35 C
+          (idle fan noise is low; full load curve is untouched:
+           max 3000 RPM, acoustic limit 1900 RPM, throttle 2800 RPM)
+
+Rollback
+------------------------------------------------------------------------------
+  Boot Windows and run: D:\Code\hackintosh\rollback-ppt.ps1 (as admin)
+  or copy back the config from
+  D:\Code\hackintosh\EFI-backup-20261023-225417-before-ppt\EFI\OC\config.plist
+
+Generated: 2026-10-23
